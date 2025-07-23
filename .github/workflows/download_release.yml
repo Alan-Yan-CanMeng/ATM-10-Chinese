@@ -12,9 +12,9 @@ jobs:
     environment: PARATRANZ_ENV
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # 允许推送代码到仓库
-      actions: read    # 允许读取工作流状态
-      packages: write  # 允许上传 artifacts
+      contents: write # 允许推送代码到仓库
+      actions: read # 允许读取工作流状态
+      packages: write # 允许上传 artifacts
     env:
       API_TOKEN: ${{ secrets.API_KEY }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -32,7 +32,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests nbtlib
+          pip install requests ftb_snbt_lib
 
       - name: Configure Git
         run: |
@@ -59,9 +59,11 @@ jobs:
         id: commit
         run: |
           git rm --cached error_report.html || true
+          git rm -r --cached .github/workflows/__pycache__/ || true
           if [[ -n $(git status -s) ]]; then
             git add .
             git commit -m '从Paratranz同步翻译'
+            git pull --rebase origin main || exit 1
             git push
             echo "changed=true" >> $GITHUB_OUTPUT
           else
@@ -85,6 +87,8 @@ jobs:
     steps:
       - name: Checkout code for Release
         uses: actions/checkout@v4
+        with:
+          ref: "main"
 
       - name: Download Error Report Artifact (if exists)
         id: download_error
